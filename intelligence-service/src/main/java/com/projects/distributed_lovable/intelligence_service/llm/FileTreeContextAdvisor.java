@@ -30,13 +30,17 @@ public class FileTreeContextAdvisor implements StreamAdvisor {
     public Flux<ChatClientResponse> adviseStream(ChatClientRequest request, StreamAdvisorChain streamAdvisorChain) {
         Map<String, Object> context = request.context();
         Long projectId = Long.parseLong(context.getOrDefault("projectId", 0).toString());
+        String authorizationHeader = context.get("authorizationHeader").toString();
 
-        ChatClientRequest augmentedChatClientRequest = augmentRequestWithFileTree(request, projectId);
+        ChatClientRequest augmentedChatClientRequest = augmentRequestWithFileTree(request, projectId, authorizationHeader);
 
         return streamAdvisorChain.nextStream(augmentedChatClientRequest);
     }
 
-    private ChatClientRequest augmentRequestWithFileTree(ChatClientRequest request, Long projectId) {
+    private ChatClientRequest augmentRequestWithFileTree(
+            ChatClientRequest request,
+            Long projectId,
+            String authorizationHeader) {
 
         List<Message> incomingMessages = request.prompt().getInstructions();
 
@@ -56,7 +60,7 @@ public class FileTreeContextAdvisor implements StreamAdvisor {
             allMessages.add(systemMessage);
         }
 
-        List<FileNode> fileTree = workspaceClient.getFileTree(projectId).files();
+        List<FileNode> fileTree = workspaceClient.getFileTree(projectId, authorizationHeader).files();
         String fileTreeContext = "\n\n ---- FILE_TREE ----\n"+fileTree.toString();
         allMessages.add(new SystemMessage(fileTreeContext));
 

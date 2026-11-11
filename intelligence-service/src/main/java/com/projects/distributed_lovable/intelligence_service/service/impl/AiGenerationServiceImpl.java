@@ -61,15 +61,17 @@ public class AiGenerationServiceImpl implements AiGenerationService {
 //        usageService.checkDailyTokensUsage();
 
         Long userId = authUtil.getCurrentUserId();
+        String authorizationHeader = "Bearer " + authUtil.getCurrentAccessToken();
         ChatSession chatSession = createChatSessionIfNotExists(projectId, userId);
 
         Map<String, Object> advisorParams = Map.of(
                 "userId", userId,
-                "projectId", projectId
+                "projectId", projectId,
+                "authorizationHeader", authorizationHeader
         );
 
         StringBuilder fullResponseBuffer = new StringBuilder();
-        CodeGenerationTools codeGenerationTools = new CodeGenerationTools(projectId, workspaceClient);
+        CodeGenerationTools codeGenerationTools = new CodeGenerationTools(projectId, workspaceClient, authorizationHeader);
 
         AtomicReference<Long> startTime = new AtomicReference<>(System.currentTimeMillis());
         AtomicReference<Long> endTime = new AtomicReference<>(0L);

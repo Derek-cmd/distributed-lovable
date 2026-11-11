@@ -57,4 +57,12 @@ public class AuthUtil {
         return userPrincipal.userId();
     }
 
+    public String getCurrentAccessToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getCredentials() instanceof String token) || token.isBlank()) {
+            throw new AuthenticationCredentialsNotFoundException("No JWT Found");
+        }
+        return token;
+    }
+
 }
