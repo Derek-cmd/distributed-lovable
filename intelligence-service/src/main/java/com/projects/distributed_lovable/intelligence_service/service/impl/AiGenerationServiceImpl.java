@@ -109,7 +109,7 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                         finalizeChats(userMessage, chatSession, fullResponseBuffer.toString(), duration, usageRef.get(), userId);
                     });
                 })
-                .doOnError(error -> log.error("Error during streaming for projectId: {}", projectId))
+                .doOnError(error -> log.error("Error during streaming for projectId: {}", projectId, error))
                 .map(response -> {
                     if (response.getResults() != null && !response.getResults().isEmpty()) {
 
