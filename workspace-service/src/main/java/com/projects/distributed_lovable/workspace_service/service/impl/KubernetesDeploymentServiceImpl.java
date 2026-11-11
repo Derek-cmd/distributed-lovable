@@ -51,6 +51,7 @@ public class KubernetesDeploymentServiceImpl implements DeploymentService {
 
         if (existingPod != null) {
             log.info("Found existing pod {} for project {}. Resuming...", existingPod.getMetadata().getName(), projectId);
+            syncProjectFiles(existingPod.getMetadata().getName(), projectId);
             registerRoute(domain, existingPod);
             return new DeployResponse(formattedUrl);
         }
@@ -113,6 +114,11 @@ public class KubernetesDeploymentServiceImpl implements DeploymentService {
 
         redisTemplate.opsForValue().set("route:" + domain, podIp + ":5173", 6, TimeUnit.HOURS);
         log.info("Route Registered: {} -> {}", domain, podIp);
+    }
+
+    private void syncProjectFiles(String podName, Long projectId) {
+        String syncCmd = String.format("mc mirror --overwrite myminio/projects/%d/ /app/", projectId);
+        execCommand(podName, "syncer", "sh", "-c", syncCmd);
     }
 
     private void execCommand(String podName, String container, String... command) {
