@@ -32,7 +32,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
 
-    private final Integer FREE_TIER_PROJECTS_ALLOWED = 100;
+    private static final int FREE_TIER_PROJECTS_ALLOWED = 100;
 
 
     @Override
@@ -148,7 +148,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public PlanDto getCurrentSubscribedPlanByUser() {
         SubscriptionResponse subscriptionResponse = getCurrentSubscription();
-        return subscriptionResponse.plan();
+        PlanDto currentPlan = subscriptionResponse.plan();
+        if (currentPlan != null) {
+            return currentPlan;
+        }
+
+        // Newly registered users do not have a paid subscription yet. Give them
+        // the configured free-tier project allowance instead of returning null.
+        return new PlanDto(null, "Free", FREE_TIER_PROJECTS_ALLOWED, null, false, null);
     }
 
     ///  Utility methods
